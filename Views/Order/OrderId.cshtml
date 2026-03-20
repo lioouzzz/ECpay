@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="payBtn">前往付款</button>
+    <p id="msg"></p>
+</body>
+
+<script>
+    document.getElementById("payBtn").addEventListener("click",async function(){
+        const msg = document.getElementById("msg")
+
+        const pathname=window.location.pathname
+        const pathSplit= pathname.split("/").filter(Boolean);
+        const orderId=pathSplit[pathSplit.length-1]
+
+        console.log(window.location.pathname);
+        console.log(orderId);
+
+        if(!orderId){
+            msg.textContent='找不到訂單編號';
+            return
+        }
+
+        try{
+            msg.textContent='導向付款中...'
+
+            const response=await  fetch(`/api/payment/checkout/${orderId}`,{method:"POST"});
+
+            console.log(response)
+
+            if(!response.ok){
+                const text= await response.text();
+               console.log(response)
+
+                throw new Error(text)
+            }
+
+            const data=await response.json();
+            const form = document.createElement("form")
+            form.method="POST"
+            form.action=data.actionUrl;
+
+            Object.entries(data.fields).forEach(([key,value])=>{
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = key;
+                input.value = value ?? "";
+                form.appendChild(input);
+            })
+
+            document.body.appendChild(form)
+            form.submit()
+        } catch(error){
+            msg.textContent=error.message || "付款失敗"
+        }
+
+    })
+</script>
+</html>

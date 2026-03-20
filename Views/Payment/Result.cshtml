@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>付款結果</h1>
+
+    <p>訂單編號：<span id="orderNo"></span></p>
+    <p>狀態碼：<span id="rtnCode"></span></p>
+    <p>訊息：<span id="rtnMsg"></span></p>
+
+    <p id="resultText"></p>
+</body>
+
+<script>
+    const params=new URLSearchParams(window.location.search)
+
+    const orderNo=params.get("orderNo");
+    const rtnCode=params.get("rtnCode");
+    const rtnMsg=params.get("rtnMsg");
+
+    document.getElementById("orderNo").textContent=orderNo;
+    document.getElementById("rtnCode").textContent=rtnCode;
+    document.getElementById("rtnMsg").textContent=rtnMsg;
+
+
+
+    const resultText=document.getElementById("resultText")
+
+    if(rtnCode=="1"){
+        resultText.textContent='付款完成 (最終結果以系統為準)'
+        resultText.style.color="green"
+    } else {
+        resultText.textContent="付款失敗"
+        resultText.style.color="red"
+    }
+</script>
+</html>
