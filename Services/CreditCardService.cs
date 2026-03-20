@@ -32,7 +32,9 @@ namespace Ecpay.Services
 
 
             if ( creditCardModel.MerchantTradeNo.Length > 20 )
-                creditCardModel.MerchantTradeNo = creditCardModel.MerchantTradeNo [..20];
+
+                //只取20個字元
+                creditCardModel.MerchantTradeNo = creditCardModel.MerchantTradeNo.Substring( 0 , 20 );
 
             creditCardModel.CheckMacValue = GenerateCheckMacValue( creditCardModel.ToDictionary() );
             return creditCardModel;
@@ -40,13 +42,23 @@ namespace Ecpay.Services
 
         public bool ValidateCallback(IFormCollection form)
         {
-            var data = form.ToDictionary( x => x.Key , x => x.Value.ToString() );
-            if ( !data.TryGetValue( "CheckMacValue" , out var checkMacValue ) )
+            var data = new Dictionary<string , string>();
+
+            foreach ( var item in form )
+            {
+                data [item.Key] = item.Value.ToString();
+            }
+
+            if ( !data.ContainsKey( "CheckMacValue" ) ) 
+            {
                 return false;
+            }
+            string checkMacValue = data ["CheckMacValue"];
 
             data.Remove( "CheckMacValue" );
-            var newCheckMacValue = GenerateCheckMacValue( data );
+            string newCheckMacValue= GenerateCheckMacValue( data );
             return string.Equals( checkMacValue , newCheckMacValue , StringComparison.OrdinalIgnoreCase );
+
         }
 
         public string GenerateCheckMacValue(Dictionary<string , string> data)
@@ -61,6 +73,7 @@ namespace Ecpay.Services
 
             var rawString = $"HashKey={hashKey}&{string.Join( "&" , sortedData )}&HashIV={hashIV}";
 
+            // 字串進行 URL 編碼
             var encoded = Uri.EscapeDataString( rawString )
                 .Replace( "%20" , "+" )
                 .Replace( "%21" , "!" )
